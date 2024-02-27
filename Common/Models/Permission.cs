@@ -28,7 +28,7 @@ namespace Common.Models
         [Required]
         [ForeignKey("User")]
         public string UserIdFK { get; set; }
-        public virtual IdentityUser User { get; set; }
+        public virtual CustomUser User { get; set; }
 
 
         [Required]

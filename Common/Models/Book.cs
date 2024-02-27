@@ -26,5 +26,8 @@ namespace Common.Models
         public int CategoryFK { get; set; }
 
         public virtual Category Category { get; set; }
+
+        [Required]
+        public int Year { get; set; }
     }
 }
