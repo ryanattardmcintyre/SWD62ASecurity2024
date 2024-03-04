@@ -1,10 +1,8 @@
-using Common.Models;
-using DataAccess.Context;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using WebApplication1.Data;
 
-
-namespace Presentation
+namespace WebApplication1
 {
     public class Program
     {
@@ -14,27 +12,13 @@ namespace Presentation
 
             // Add services to the container.
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-            builder.Services.AddDbContext<LibraryContext>(options =>
+            builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(connectionString));
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-            builder.Services.AddDefaultIdentity<CustomUser>(options =>
-            {
-                options.SignIn.RequireConfirmedAccount = true;
-                options.Lockout.MaxFailedAccessAttempts = 3;
-                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromDays(36500);
-
-                //configure the password strength
-                //options.Password.RequireNonAlphanumeric ...
-
-                
-
-            })
-                .AddEntityFrameworkStores<LibraryContext>();
+            builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
+                .AddEntityFrameworkStores<ApplicationDbContext>();
             builder.Services.AddControllersWithViews();
-
-
-             
 
             var app = builder.Build();
 
