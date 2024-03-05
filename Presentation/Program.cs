@@ -1,5 +1,6 @@
 using Common.Models;
 using DataAccess.Context;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -31,6 +32,13 @@ namespace Presentation
 
             })
                 .AddEntityFrameworkStores<LibraryContext>();
+
+            builder.Services.AddAuthentication().AddMicrosoftAccount(microsoftOptions =>
+            {
+                microsoftOptions.ClientId = builder.Configuration["Authentication:Microsoft:ClientId"];
+                microsoftOptions.ClientSecret = builder.Configuration["Authentication:Microsoft:ClientSecret"];
+            });
+
             builder.Services.AddControllersWithViews();
 
 
