@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Common.Validators;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -14,20 +15,25 @@ namespace Common.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
-        [Required]
+        [Required(AllowEmptyStrings =false, ErrorMessage="Fill in the name")]
+        [RegularExpression("^[A-Za-z ]+$", ErrorMessage ="Name must contain only letters")]
         public string Name { get; set; }
-        [Required]
+
+        [Required(AllowEmptyStrings = false, ErrorMessage = "Fill in the author name")]
         public string Author { get; set; }
-        [Required]
+
+
+        [Required(AllowEmptyStrings =true)]
         public string Filename { get; set; }
        
-        [Required]
+      
         [ForeignKey("Category")]
         public int CategoryFK { get; set; }
 
         public virtual Category Category { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Fill in the year")]
+        [YearValidation()]
         public int Year { get; set; }
     }
 }

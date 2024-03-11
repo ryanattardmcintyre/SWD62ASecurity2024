@@ -1,5 +1,6 @@
 using Common.Models;
 using DataAccess.Context;
+using DataAccess.Repositories;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -41,8 +42,11 @@ namespace Presentation
 
             builder.Services.AddControllersWithViews();
 
-
-             
+            //this line registers the service BooksRepository to the Services collection
+            //which holds info about all the services that might be requested while
+            //the application is running
+            builder.Services.AddScoped<BooksRepository>();
+            builder.Services.AddScoped<CategoriesRepository>();
 
             var app = builder.Build();
 
