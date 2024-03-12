@@ -1,6 +1,7 @@
 ﻿using Common.Models;
 using DataAccess.Repositories;
 using Microsoft.AspNetCore.Mvc;
+using Presentation.Models;
 
 namespace Presentation.Controllers
 {
@@ -24,17 +25,27 @@ namespace Presentation.Controllers
         }
 
         [HttpPost] //this is going to be called when the user hits the submit button - this is saving the data into the db
-        public IActionResult Create(Book b)
+        public IActionResult Create(BookViewModel b)
         {
             ModelState.Remove("Id");
-            ModelState.Remove("Category");
+         //   ModelState.Remove("Category");
             ModelState.Remove("Filename");
 
             //force the validators to work
             if (ModelState.IsValid) {
 
                 b.Filename = "";
-              _bookRepository.AddBook(b);
+
+                Book myBook = new Book()
+                {
+                    Name = b.Name.ToUpper(),
+                    Year = b.Year,
+                    Filename = b.Filename,
+                    CategoryFK = b.CategoryFK,
+                    Author = b.Author
+                };
+
+              _bookRepository.AddBook(myBook);
             }
 
             return View(b);

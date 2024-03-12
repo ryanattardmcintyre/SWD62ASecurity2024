@@ -1,5 +1,4 @@
-﻿using Common.Validators;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -33,7 +32,6 @@ namespace Common.Models
         public virtual Category Category { get; set; }
 
         [Required(ErrorMessage = "Fill in the year")]
-        [YearValidation()]
         public int Year { get; set; }
     }
 }
