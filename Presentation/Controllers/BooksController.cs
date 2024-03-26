@@ -2,6 +2,7 @@
 using DataAccess.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Presentation.ActionFilters;
 using Presentation.Models;
 
 namespace Presentation.Controllers
@@ -65,7 +66,7 @@ namespace Presentation.Controllers
                     {
 
                         //37 80 68 70	
-                        int[] whitelistPdf = new int[] { 37, 80, 68, 70 };
+                        int[] whitelistPdf = new int[] { 37, 80, 68, 70 }; //magic numbers
                         bool fileCheck = true;
                         int counter = 0;
                         int myReadByte;
@@ -174,5 +175,32 @@ namespace Presentation.Controllers
 
             return RedirectToAction("Index");
         }
+
+
+        [BookAccessActionFilter(true)]
+        public IActionResult Download(int bookId, [FromServices] IHostEnvironment env)
+        {
+            var book = _bookRepository.GetAllBooks().SingleOrDefault(x => x.Id == bookId);
+            if(book != null)
+            {
+                //Data/filename.pdf
+                string absolutePathToTheBook = env.ContentRootPath + book.Filename;
+
+               byte[] bookInBytes =System.IO.File.ReadAllBytes(absolutePathToTheBook);
+                return File(bookInBytes, "application/pdf", Guid.NewGuid() + ".pdf");
+
+               
+            }
+            else
+            {
+                TempData["error"] = "Book not found";
+                return RedirectToAction("Index");
+            }
+
+
+        }
+
+
+
     }
 }

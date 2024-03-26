@@ -47,6 +47,7 @@ namespace Presentation
             //the application is running
             builder.Services.AddScoped<BooksRepository>();
             builder.Services.AddScoped<CategoriesRepository>();
+            builder.Services.AddScoped<PermissionsRepository>();
 
             var app = builder.Build();
 
