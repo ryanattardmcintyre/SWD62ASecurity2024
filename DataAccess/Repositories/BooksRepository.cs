@@ -31,5 +31,17 @@ namespace DataAccess.Repositories
             return _context.Books;
 
         }
+
+        public void DeleteBook(Book book)
+        {
+            _context.Books.Remove(book);
+            _context.SaveChanges();
+        }
+
+
+        public IQueryable<Permission> GetBookPermissions(int id)
+        {
+            return _context.Permissions.Where(x => x.BookIdFK == id);
+        }
     }
 }

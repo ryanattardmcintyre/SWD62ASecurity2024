@@ -20,6 +20,11 @@ namespace Presentation.Models
         [Required(AllowEmptyStrings = true)]
         public string Filename { get; set; }
 
+
+        public IFormFile File { get; set; }
+
+
+
         [CategoryValidation]
         public int CategoryFK { get; set; }
 

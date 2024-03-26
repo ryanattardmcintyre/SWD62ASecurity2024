@@ -145,6 +145,10 @@ namespace Presentation.Areas.Identity.Pages.Account
 
                 if (result.Succeeded)
                 {
+                    //adding a default role to the newly registered user
+                    await _userManager.AddToRoleAsync(user, "user");
+
+
                     _logger.LogInformation("User created a new account with password.");
 
                     var userId = await _userManager.GetUserIdAsync(user);

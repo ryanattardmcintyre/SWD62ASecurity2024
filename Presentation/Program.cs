@@ -20,19 +20,19 @@ namespace Presentation
                 options.UseSqlServer(connectionString));
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-            builder.Services.AddDefaultIdentity<CustomUser>(options =>
-            {
-                options.SignIn.RequireConfirmedAccount = true;
+           builder.Services.AddIdentity<CustomUser, IdentityRole>
+                (options => { 
+                  options.SignIn.RequireConfirmedAccount = true;
                 options.Lockout.MaxFailedAccessAttempts = 3;
                 options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromDays(36500);
 
                 //configure the password strength
                 //options.Password.RequireNonAlphanumeric ...
-
                 
-
-            })
-                .AddEntityFrameworkStores<LibraryContext>();
+                })
+                 .AddDefaultUI()
+                 .AddEntityFrameworkStores<LibraryContext>()
+                 .AddDefaultTokenProviders();
 
             builder.Services.AddAuthentication().AddMicrosoftAccount(microsoftOptions =>
             {

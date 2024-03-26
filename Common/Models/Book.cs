@@ -33,5 +33,6 @@ namespace Common.Models
 
         [Required(ErrorMessage = "Fill in the year")]
         public int Year { get; set; }
+ 
     }
 }
