@@ -19,6 +19,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using Presentation.Utilities;
 
 namespace Presentation.Areas.Identity.Pages.Account
 {
@@ -128,6 +129,8 @@ namespace Presentation.Areas.Identity.Pages.Account
 
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
+       
+
             returnUrl ??= Url.Content("~/");
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
             if (ModelState.IsValid)
@@ -135,7 +138,7 @@ namespace Presentation.Areas.Identity.Pages.Account
                 var user = CreateUser();
                 user.FirstName = Input.FirstName; 
                 user.LastName = Input.LastName;
-                user.SecurityAnswer= Input.SecurityAnswer;
+                user.SecurityAnswer= new Encryption().Hash(Input.SecurityAnswer);
                 user.SecurityQuestion= Input.SecurityQuestion;
 
 

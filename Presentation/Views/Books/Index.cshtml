@@ -60,7 +60,7 @@
                 
                     @if (User.IsInRole("Admin"))
                     {   <span> | </span>
-                        @Html.ActionLink("Delete", "Delete", new {  id=item.Id   })
+                        @Html.ActionLink("Delete", "Delete", new {  id=item.EncryptedId   })
                     }
             </td>
         </tr>

@@ -1,9 +1,12 @@
 ﻿using Common.Models;
 using DataAccess.Repositories;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Presentation.ActionFilters;
 using Presentation.Models;
+using Presentation.Utilities;
+using System.Text;
 
 namespace Presentation.Controllers
 {
@@ -16,13 +19,23 @@ namespace Presentation.Controllers
         }
 
         
-        public IActionResult Index()
+        public async Task<IActionResult> Index([FromServices] UserManager<CustomUser> userRepository)
         {
+
+            string passwordHash = (await userRepository.GetUserAsync(User)).Id.ToString();
+
+            Encryption myEncryptionTool = new Encryption();
+
             var list = _bookRepository.GetAllBooks().ToList();
             
+
+
             var books = from b in list
                     select new BookViewModel()
                     {
+                         EncryptedId =  Convert.ToBase64String(myEncryptionTool.SymmetricEncrypt(
+                           System.Text.UTF32Encoding.UTF32.GetBytes(
+                                 Convert.ToString(b.Id)), passwordHash)), 
                         Id = b.Id,
                         Author = b.Author,
                         CategoryFK = b.CategoryFK,
@@ -31,6 +44,26 @@ namespace Presentation.Controllers
                         Year = b.Year
                     };
 
+
+            //in the encryption:
+            //step 1 UTF32 > byte[] //UTF32.GetBytes()
+            //step 2 encryption/hashing/decryption
+            //step 3 byte[] > base64 //Convert.ToBase64
+
+            //in the decryption:
+            //step 1 base64 > byte[] //Convert.FromBase64
+            //step 2 ....
+            //step 3 byte[] > UTF32 //UTF32.GetString()
+
+
+          /*  foreach (var book in books)
+            {
+
+                byte[] encryptedData = myEncryptionTool.SymmetricEncrypt(UTF32Encoding.UTF32.GetBytes(Convert.ToString(book.Id)), passwordHash);
+                book.EncryptedId = Convert.ToBase64String(encryptedData);
+            }
+
+            */
             return View(books);
         }
 

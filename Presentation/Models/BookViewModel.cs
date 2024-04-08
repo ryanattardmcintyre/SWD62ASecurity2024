@@ -7,6 +7,7 @@ namespace Presentation.Models
 {
     public class BookViewModel //the pages do not interact directly with the classes forming the database
     {
+        public string EncryptedId { get; set; }
         public int Id { get; set; }
 
         [Required(AllowEmptyStrings = false, ErrorMessage = "Fill in the name")]
