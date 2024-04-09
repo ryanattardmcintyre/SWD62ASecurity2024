@@ -7,6 +7,8 @@ using Presentation.ActionFilters;
 using Presentation.Models;
 using Presentation.Utilities;
 using System.Text;
+using System.Text.Encodings.Web;
+using System.Web;
 
 namespace Presentation.Controllers
 {
@@ -30,12 +32,23 @@ namespace Presentation.Controllers
             
 
 
+            //http://localhost:8080/books/delete?id=alskdjfl$aks|jdflask__
+
+
+            //1. text data CONVERTED to utf32
+            //2. encrypted the data
+            //3. the encrypted data CONVERTED to base64
+
+
+        
             var books = from b in list
                     select new BookViewModel()
                     {
-                         EncryptedId =  Convert.ToBase64String(myEncryptionTool.SymmetricEncrypt(
-                           System.Text.UTF32Encoding.UTF32.GetBytes(
-                                 Convert.ToString(b.Id)), passwordHash)), 
+                         EncryptedId = HttpUtility.UrlEncode(
+                                       Convert.ToBase64String(myEncryptionTool.SymmetricEncrypt(
+                                       System.Text.UTF32Encoding.UTF32.GetBytes(
+                                       Convert.ToString(b.Id)), passwordHash))
+                                       ),
                         Id = b.Id,
                         Author = b.Author,
                         CategoryFK = b.CategoryFK,
@@ -178,32 +191,64 @@ namespace Presentation.Controllers
 
 
         [Authorize(Roles = "Admin")]
-        public ActionResult Delete(int id, [FromServices]IHostEnvironment env)
+        public async Task<ActionResult> Delete(string id, [FromServices]IHostEnvironment env, [FromServices] UserManager<CustomUser> userRepository)
         {
-            //delete 
-            var bookToBeDeleted = _bookRepository.GetAllBooks().SingleOrDefault(x => x.Id == id);
-            if (bookToBeDeleted != null)
-            {
-                if (_bookRepository.GetBookPermissions(id).Count() == 0)
-                {//
-                    _bookRepository.DeleteBook(bookToBeDeleted);
+            //decrypt the received value
 
-                    //Delete the physical file as well
-                    string absolutePath = env.ContentRootPath + "\\" + bookToBeDeleted.Filename;
-                    if (System.IO.File.Exists(absolutePath))
-                    {
-                      System.IO.File.Delete(absolutePath);
+            string safeInput = HttpUtility.UrlDecode(id);
+
+            int originalId = 0;
+            //decrypt
+            //1. text data CONVERTED to utf32 bytes
+            //2. encrypted the data
+            //3. the encrypted data CONVERTED to base64
+
+            //---------------------------------------------------------------
+
+            //3. base64 string CONVERTED into bytes
+
+            try
+            {
+                byte[] cipherAsBytes = Convert.FromBase64String(safeInput);
+
+                //2. decrypt the data
+
+                string passwordHash = (await userRepository.GetUserAsync(User)).Id.ToString();
+                byte[] originalDataAsBytes = new Encryption().SymmetricDecrypt(cipherAsBytes, passwordHash);
+
+                //1. the decrypted data CONVERTED into UTF32
+                originalId = Convert.ToInt32(UTF32Encoding.UTF32.GetString(originalDataAsBytes)); //THIS IS HIGHLY CRITICAL
+
+                //delete 
+                var bookToBeDeleted = _bookRepository.GetAllBooks().SingleOrDefault(x => x.Id == originalId);
+                if (bookToBeDeleted != null)
+                {
+                    if (_bookRepository.GetBookPermissions(originalId).Count() == 0)
+                    {//
+                        _bookRepository.DeleteBook(bookToBeDeleted);
+
+                        //Delete the physical file as well
+                        string absolutePath = env.ContentRootPath + "\\" + bookToBeDeleted.Filename;
+                        if (System.IO.File.Exists(absolutePath))
+                        {
+                            System.IO.File.Delete(absolutePath);
+                        }
+                        TempData["message"] = "Book deleted";
                     }
-                    TempData["message"] = "Book deleted";
+                    else
+                    {
+                        TempData["error"] = "Book cannot be deleted because other users have access to it";
+                    }
                 }
                 else
                 {
-                    TempData["error"] = "Book cannot be deleted because other users have access to it";
+                    TempData["error"] = "Book not in the database";
                 }
             }
-            else
+            catch (Exception ex)
             {
-                TempData["error"] = "Book not in the database";
+                TempData["error"] = "Failed to read the id";
+                //log 
             }
 
             return RedirectToAction("Index");

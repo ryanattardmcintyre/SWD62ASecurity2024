@@ -68,6 +68,36 @@ namespace Presentation.Utilities
             return msOut.ToArray();            
         }
 
+        public byte[] SymmetricDecrypt(byte[] cipher, string password)
+        {
+            Aes myAlg = Aes.Create();
+
+            //approach 1 how to generate a key - then you need to extract the key and save it somewhere safe
+            //myAlg.GenerateKey();
+            //myAlg.GenerateIV();
+
+            //approach 2 how to generate a key - this one uses an input from the user as a key + salt
+            //- this will create a different secret key for every user
+            Rfc2898DeriveBytes myKeyGenerator = new Rfc2898DeriveBytes(password, salt);
+            byte[] secretKey = myKeyGenerator.GetBytes(myAlg.KeySize / 8);
+            byte[] iv = myKeyGenerator.GetBytes(myAlg.BlockSize / 8);
+
+
+
+            MemoryStream msIn = new MemoryStream(cipher); //Point A
+            msIn.Position = 0;//ascertain myself that the CryptoStream (later on) will start from position 0
+
+            MemoryStream msOut = new MemoryStream(); // Point B
+            using (CryptoStream myCryptoStream = new CryptoStream(msIn,
+                                                               myAlg.CreateDecryptor(secretKey, iv),
+                                                                CryptoStreamMode.Read))
+            {
+                myCryptoStream.CopyTo(msOut);
+            }
+
+            msOut.Position = 0;
+            return msOut.ToArray();
+        }
 
 
 
