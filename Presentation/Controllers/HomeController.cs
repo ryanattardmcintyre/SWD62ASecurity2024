@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Presentation.Models;
+using Presentation.Utilities;
 using System.Diagnostics;
+using System.Text;
 
 namespace Presentation.Controllers
 {
@@ -15,6 +17,37 @@ namespace Presentation.Controllers
 
         public IActionResult Index()
         {
+
+            Encryption myEncryption = new Encryption();
+
+            
+            //NOTE: Asymmetric encryption works only with base-64 data. Hence...
+            string myPassword = "Hello World!";
+            string myPasswordIntoBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(myPassword)); //SGVsbG8gV29ybGQhCg==
+
+            //1. generate a public-private pair of keys
+            var myKeys = myEncryption.GenerateAsymmetricKeys();
+
+            //2. encrypt the base64 data
+            byte[] clearDataAsBytesBase64 = Convert.FromBase64String(myPasswordIntoBase64);
+            byte [] cipher = myEncryption.AsymmetricEncrypt(clearDataAsBytesBase64, myKeys.PublicKey);
+
+            //-----------------------------------------------------------------------------------------------------------
+
+            //Note: that i am using the same keys as in the encryption
+
+            byte[] originalDataInBase64= myEncryption.AsymmetricDecrypt(cipher, myKeys.PrivateKey);
+
+
+            string originalData = Encoding.UTF8.GetString(originalDataInBase64);
+
+
+            var myOutputThatsGoingToBeSavedInAFile =
+                myEncryption.HybridEncrypt(Encoding.UTF32.GetBytes(myPassword), myKeys.PublicKey);
+
+            //System.IO.File.WriteAllBytes("", myOutputThatsGoingToBeSavedInAFile.ToArray());
+
+
             return View();
         }
 

@@ -1,8 +1,7 @@
 ﻿using System.Security.Cryptography; //gives me access to the algorithms represented as classes
 using System.IO; //enable to use Streams
 using System.Text; //will enable me to convert the relevant data from various character sets
-
-
+using System.Diagnostics;
 
 namespace Presentation.Utilities
 {
@@ -100,6 +99,96 @@ namespace Presentation.Utilities
         }
 
 
+        public AsymmetricParameters GenerateAsymmetricKeys()
+        { 
+            RSACryptoServiceProvider rsa= new RSACryptoServiceProvider();
+            AsymmetricParameters myParams = new AsymmetricParameters()
+            {
+                PublicKey = rsa.ToXmlString(false),
+                PrivateKey = rsa.ToXmlString(true)
+            };
+
+            return myParams;
+
+        }
+
+        public byte[] AsymmetricEncrypt(byte[] clearBytes, string publicKey)
+        {
+            RSACryptoServiceProvider rsa = new RSACryptoServiceProvider(); //it will generate another pair of keys
+            rsa.FromXmlString(publicKey); //import the keys we created earlier
+
+            byte[] cipher = rsa.Encrypt(clearBytes, true);
+            return cipher;
+
+        }
+
+        public byte[] AsymmetricDecrypt(byte[] cipher, string privateKey)
+        {
+            RSACryptoServiceProvider rsa = new RSACryptoServiceProvider(); //it will generate another pair of keys
+            rsa.FromXmlString(privateKey); //import the keys we created earlier
+
+            byte[] originalData = rsa.Decrypt(cipher, true);
+            return originalData;
+
+        }
+
+        public byte[] DigitalSign(byte[] data, string privateKey)
+        {
+            RSACryptoServiceProvider rsa = new RSACryptoServiceProvider();
+            rsa.FromXmlString(privateKey);
+
+            byte[] digest = Hash(data);
+            
+            byte[] signature =  rsa.SignHash(digest, new HashAlgorithmName("SHA512"), RSASignaturePadding.Pkcs1);
+            return signature;
+
+        }
+
+        public bool DigitalVerify(byte[] data, byte[] signature, string publicKey)
+        {
+            //use rsa.VerifyHash(...);
+
+            //return the output of VerifyHash;
+
+            return false;
+        
+        }
+
+
+        public MemoryStream HybridEncrypt(byte[] data, string publicKey) {
+
+            Aes myAlg = Aes.Create();
+            //step 2
+            myAlg.GenerateKey();
+            myAlg.GenerateIV();
+
+            //step 3
+            MemoryStream msIn = new MemoryStream(data); //Point A
+            msIn.Position = 0;//ascertain myself that the CryptoStream (later on) will start from position 0
+
+            MemoryStream msOut = new MemoryStream(); // Point B
+            using (CryptoStream myCryptoStream = new CryptoStream(msIn,myAlg.CreateEncryptor(),CryptoStreamMode.Read))
+            {
+                myCryptoStream.CopyTo(msOut);
+            }
+            msOut.Position = 0;
+
+            //msOut contains my encrypted data
+            //step 4
+            byte[] encryptedKey = AsymmetricEncrypt(myAlg.Key, publicKey);
+            byte[] encryptedIv = AsymmetricEncrypt(myAlg.IV, publicKey);
+
+            //step 5
+            MemoryStream output = new MemoryStream();
+            output.Write(encryptedKey, 0, encryptedKey.Length); //if here it wrote 128bytes, atm position =128
+            output.Write(encryptedIv, 0, encryptedIv.Length);  //it continues writing from position 128
+
+            //step 6
+            msOut.CopyTo(output);
+            msOut.Flush();
+
+            return output;
+        }
 
 
 

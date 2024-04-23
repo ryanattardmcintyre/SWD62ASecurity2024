@@ -17,6 +17,8 @@ namespace Common.Models
         public string SecurityQuestion { get; set; }
         public string SecurityAnswer { get; set; }
 
+       // public string PublicKey { get; set; }
+        //public string PrivateKey { get; set; }
 
 
     }

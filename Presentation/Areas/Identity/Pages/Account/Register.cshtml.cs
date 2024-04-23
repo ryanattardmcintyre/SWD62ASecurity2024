@@ -140,7 +140,8 @@ namespace Presentation.Areas.Identity.Pages.Account
                 user.LastName = Input.LastName;
                 user.SecurityAnswer= new Encryption().Hash(Input.SecurityAnswer);
                 user.SecurityQuestion= Input.SecurityQuestion;
-
+                //user.PublicKey =....
+                //user.PrivateKey = ...
 
                 await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
                 await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
