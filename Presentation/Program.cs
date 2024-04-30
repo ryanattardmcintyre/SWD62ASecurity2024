@@ -4,7 +4,8 @@ using DataAccess.Repositories;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-
+using Serilog;
+ 
 
 namespace Presentation
 {
@@ -23,8 +24,8 @@ namespace Presentation
            builder.Services.AddIdentity<CustomUser, IdentityRole>
                 (options => { 
                   options.SignIn.RequireConfirmedAccount = true;
-                options.Lockout.MaxFailedAccessAttempts = 3;
-                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromDays(36500);
+               // options.Lockout.MaxFailedAccessAttempts = 3;
+                //options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromDays(36500);
 
                 //configure the password strength
                 //options.Password.RequireNonAlphanumeric ...
@@ -48,6 +49,20 @@ namespace Presentation
             builder.Services.AddScoped<BooksRepository>();
             builder.Services.AddScoped<CategoriesRepository>();
             builder.Services.AddScoped<PermissionsRepository>();
+
+
+            var log = new LoggerConfiguration().WriteTo.File(
+                "logs/log.txt", 
+                rollingInterval: RollingInterval.Minute,
+                restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Debug)
+                .CreateLogger();
+
+
+            // builder.Host.UseSerilog(log);
+            builder.Logging.AddSerilog(log);
+
+
+
 
             var app = builder.Build();
 

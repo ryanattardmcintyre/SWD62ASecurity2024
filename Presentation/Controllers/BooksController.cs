@@ -89,7 +89,7 @@ namespace Presentation.Controllers
             return View();
         }
 
-        [ValidateAntiForgeryToken]
+        
         [Authorize(Roles = "Librarian,Admin")]
         [HttpPost] //this is going to be called when the user hits the submit button - this is saving the data into the db
         public IActionResult Create(BookViewModel b, [FromServices] IWebHostEnvironment host)
@@ -97,6 +97,8 @@ namespace Presentation.Controllers
             ModelState.Remove("Id");
          //   ModelState.Remove("Category");
             ModelState.Remove("Filename");
+            ModelState.Remove("File");
+            ModelState.Remove("EncryptedId");
             b.Filename = "";
 
             string message = "";
@@ -258,6 +260,8 @@ namespace Presentation.Controllers
         [BookAccessActionFilter(true)]
         public IActionResult Download(int bookId, [FromServices] IHostEnvironment env)
         {
+            string ipaddress = HttpContext.Connection.RemoteIpAddress.MapToIPv4().ToString();
+
             var book = _bookRepository.GetAllBooks().SingleOrDefault(x => x.Id == bookId);
             if(book != null)
             {

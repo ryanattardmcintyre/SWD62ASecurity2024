@@ -17,6 +17,8 @@ namespace Presentation.Controllers
 
         public IActionResult Index()
         {
+            string ipaddress = HttpContext.Connection.RemoteIpAddress.MapToIPv4().ToString();
+            _logger.LogInformation("Starting to test encryption...");
 
             Encryption myEncryption = new Encryption();
 
@@ -46,6 +48,16 @@ namespace Presentation.Controllers
                 myEncryption.HybridEncrypt(Encoding.UTF32.GetBytes(myPassword), myKeys.PublicKey);
 
             //System.IO.File.WriteAllBytes("", myOutputThatsGoingToBeSavedInAFile.ToArray());
+
+
+            try
+            {
+                throw new Exception("raising an error on purpose");
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError(ex, "message occurred on an error thrown on purpose", null);
+            }
 
 
             return View();
